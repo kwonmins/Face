@@ -1,130 +1,29 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
+ 
     <meta charset="UTF-8" />
     <title>연예인 헤어스타일 합성기</title>
-    <style>
-      body {
-        font-family: "Segoe UI", sans-serif;
-        background: linear-gradient(to right, #f9f9f9, #e9f1ff);
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-height: 100vh;
-      }
-
-      header {
-        background-color: #4a90e2;
-        color: white;
-        width: 100%;
-        text-align: center;
-        padding: 1.2rem 0;
-        font-size: 1.8rem;
-        font-weight: bold;
-      }
-
-      form {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        margin-top: 2rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        width: 90%;
-        max-width: 400px;
-      }
-
-      input[type="file"] {
-        padding: 0.8rem;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-      }
-
-      button {
-        padding: 1rem;
-        background-color: #4a90e2;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 1rem;
-      }
-
-      button:hover {
-        background-color: #357abd;
-      }
-
-      .preview {
-        margin-top: 2rem;
-        text-align: center;
-      }
-
-      .preview img {
-        max-width: 90%;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        margin-bottom: 1rem;
-      }
-
-      .side-by-side {
-        display: flex;
-        justify-content: space-around;
-        flex-wrap: wrap;
-        gap: 1rem;
-        margin-top: 1rem;
-      }
-
-      .side-by-side img {
-        width: 160px;
-        height: 160px;
-        object-fit: cover;
-        border-radius: 12px;
-        border: 2px solid #ccc;
-      }
-
-      footer {
-        margin-top: auto;
-        padding: 1rem;
-        font-size: 0.9rem;
-        color: #888;
-      }
-    </style>
+<link rel="stylesheet" href="/stylesheets/style.css">
   </head>
   <body>
     <header>🎨 연예인 헤어스타일 합성기</header>
 
-    <form id="uploadForm">
+    <form action="/upload" method="POST" enctype="multipart/form-data">
       <label>🙋‍♂️ 사용자 얼굴 사진:</label>
       <input type="file" name="user" accept="image/*" required id="userInput" />
 
       <label>🎬 연예인 스타일 사진:</label>
-      <input
-        type="file"
-        name="style"
-        accept="image/*"
-        required
-        id="styleInput"
-      />
+      <input type="file" name="style" accept="image/*" required id="styleInput" />
 
       <label>🌈 염색 색상 참고 이미지:</label>
-      <input
-        type="file"
-        name="color"
-        accept="image/*"
-        required
-        id="colorInput"
-      />
+      <input type="file" name="color" accept="image/*" required id="colorInput" />
 
       <button type="submit">변환 시작</button>
     </form>
 
-    <div class="preview" id="preview">
+    <div class="preview">
       <div class="side-by-side" id="inputPreview"></div>
-      <div id="resultArea"></div>
     </div>
 
     <footer>© 2025 FastStyleGAN Demo</footer>
@@ -134,8 +33,9 @@
       const styleInput = document.getElementById("styleInput");
       const colorInput = document.getElementById("colorInput");
       const inputPreview = document.getElementById("inputPreview");
-      const resultArea = document.getElementById("resultArea");
-
+      document.querySelector("form").addEventListener("submit", () => {
+  document.getElementById("loading").classList.remove("hidden");
+});
       function handlePreview(input, id) {
         const file = input.files[0];
         if (!document.getElementById(id)) {
@@ -160,30 +60,6 @@
         handlePreview(colorInput, "colorPreview")
       );
 
-      document
-        .getElementById("uploadForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
-
-          const formData = new FormData(this);
-          resultArea.innerHTML =
-            "<p>🌀 변환 중입니다... 잠시만 기다려주세요.</p>";
-
-          try {
-            const res = await fetch("/upload", {
-              method: "POST",
-              body: formData,
-            });
-
-            if (!res.ok) throw new Error("서버 오류");
-
-            const blob = await res.blob();
-            const imgURL = URL.createObjectURL(blob);
-            resultArea.innerHTML = `<img src="${imgURL}" alt="합성 결과">`;
-          } catch (err) {
-            resultArea.innerHTML = "<p>❌ 오류 발생: " + err.message + "</p>";
-          }
-        });
     </script>
   </body>
 </html>
