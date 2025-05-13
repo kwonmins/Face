@@ -1,15 +1,33 @@
 <!DOCTYPE html>
 <html lang="ko">
   <head>
- 
     <meta charset="UTF-8" />
     <title>연예인 헤어스타일 합성기</title>
-<link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <style>
+      .hidden {
+        display: none;
+      }
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 5px solid #ccc;
+        border-top-color: #4a90e2;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
   <body>
     <header>🎨 연예인 헤어스타일 합성기</header>
 
-    <form action="/upload" method="POST" enctype="multipart/form-data">
+    <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
       <label>🙋‍♂️ 사용자 얼굴 사진:</label>
       <input type="file" name="user" accept="image/*" required id="userInput" />
 
@@ -26,40 +44,50 @@
       <div class="side-by-side" id="inputPreview"></div>
     </div>
 
+    <!-- ✅ 로딩 애니메이션 표시 -->
+    <div id="loading" class="hidden">
+      <div class="spinner"></div>
+      <p>🌀 스타일 합성 중입니다... 잠시만 기다려주세요.</p>
+    </div>
+
     <footer>© 2025 FastStyleGAN Demo</footer>
 
     <script>
-      const userInput = document.getElementById("userInput");
-      const styleInput = document.getElementById("styleInput");
-      const colorInput = document.getElementById("colorInput");
-      const inputPreview = document.getElementById("inputPreview");
-      document.querySelector("form").addEventListener("submit", () => {
-  document.getElementById("loading").classList.remove("hidden");
-});
-      function handlePreview(input, id) {
-        const file = input.files[0];
-        if (!document.getElementById(id)) {
-          const img = document.createElement("img");
-          img.id = id;
-          inputPreview.appendChild(img);
+      window.addEventListener("DOMContentLoaded", () => {
+        const userInput = document.getElementById("userInput");
+        const styleInput = document.getElementById("styleInput");
+        const colorInput = document.getElementById("colorInput");
+        const inputPreview = document.getElementById("inputPreview");
+        const loading = document.getElementById("loading");
+        const form = document.getElementById("uploadForm");
+
+        function handlePreview(input, id) {
+          const file = input.files[0];
+          if (!document.getElementById(id)) {
+            const img = document.createElement("img");
+            img.id = id;
+            inputPreview.appendChild(img);
+          }
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            document.getElementById(id).src = e.target.result;
+          };
+          reader.readAsDataURL(file);
         }
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          document.getElementById(id).src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
 
-      userInput.addEventListener("change", () =>
-        handlePreview(userInput, "userPreview")
-      );
-      styleInput.addEventListener("change", () =>
-        handlePreview(styleInput, "stylePreview")
-      );
-      colorInput.addEventListener("change", () =>
-        handlePreview(colorInput, "colorPreview")
-      );
+        userInput.addEventListener("change", () => handlePreview(userInput, "userPreview"));
+        styleInput.addEventListener("change", () => handlePreview(styleInput, "stylePreview"));
+        colorInput.addEventListener("change", () => handlePreview(colorInput, "colorPreview"));
 
+        form.addEventListener("submit", (e) => {
+          if (userInput.files[0] && styleInput.files[0] && colorInput.files[0]) {
+            loading.classList.remove("hidden");
+          } else {
+            e.preventDefault();
+            alert("모든 파일을 선택해주세요.");
+          }
+        });
+      });
     </script>
   </body>
 </html>
