@@ -46,7 +46,7 @@ app.post(
       form.append("color", fs.createReadStream(colorPath));
 
       const response = await axios.post(
-        "https://YOUR-NGROK.ngrok-free.app/generate",
+        "https://703d-35-227-18-11.ngrok-free.app/generate",
         form,
         {
           headers: form.getHeaders(),
