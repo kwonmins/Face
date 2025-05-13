@@ -6,7 +6,7 @@ const FormData = require("form-data");
 const axios = require("axios");
 const ejs = require("ejs");
 const app = express();
-const upload = multer({ dest: "/tmp/uploads" }); // Lambda 환경은 /tmp만 씀
+const upload = multer({ dest: "/tmp" }); // Lambda 환경은 /tmp만 씀
 
 app.set("views", path.join(__dirname, "../views"));
 app.set("view engine", "ejs");
