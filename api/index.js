@@ -1,24 +1,26 @@
 const express = require("express");
-const path = require("path");
-const fs = require("fs");
 const multer = require("multer");
-const FormData = require("form-data");
+const fs = require("fs");
+const path = require("path");
 const axios = require("axios");
-const ejs = require("ejs");
+const FormData = require("form-data");
+
 const app = express();
-const upload = multer({ dest: "/tmp" }); // Lambda 환경은 /tmp만 씀
+const upload = multer({ dest: "/tmp" }); // Vercel 서버리스 환경에서는 /tmp만 사용 가능
 
 app.set("views", path.join(__dirname, "../views"));
 app.set("view engine", "ejs");
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../public")));
 
+// 홈 페이지 렌더링
 app.get("/", (req, res) => {
-  res.render("index"); // 또는 upload 폼 페이지
+  res.render("index");
 });
 
+// 업로드 및 Colab 서버 호출
 app.post(
   "/upload",
   upload.fields([
@@ -28,13 +30,13 @@ app.post(
   ]),
   async (req, res) => {
     try {
-      const userPath = req.files["user"][0].path;
-      const stylePath = req.files["style"][0].path;
-      const colorPath = req.files["color"][0].path;
+      const userPath = req.files["user"]?.[0]?.path;
+      const stylePath = req.files["style"]?.[0]?.path;
+      const colorPath = req.files["color"]?.[0]?.path;
 
-      const base64User = fs.readFileSync(userPath, "base64");
-      const base64Style = fs.readFileSync(stylePath, "base64");
-      const base64Color = fs.readFileSync(colorPath, "base64");
+      if (!userPath || !stylePath || !colorPath) {
+        throw new Error("파일 누락");
+      }
 
       const form = new FormData();
       form.append("user", fs.createReadStream(userPath));
@@ -42,7 +44,7 @@ app.post(
       form.append("color", fs.createReadStream(colorPath));
 
       const response = await axios.post(
-        "https://YOUR-NGROK-NODE/generate",
+        "https://YOUR-NGROK.ngrok-free.app/generate",
         form,
         {
           headers: form.getHeaders(),
@@ -50,7 +52,10 @@ app.post(
         }
       );
 
-      const base64Image = response.data.toString("base64");
+      const base64Image = Buffer.from(response.data).toString("base64");
+      const base64User = fs.readFileSync(userPath, "base64");
+      const base64Style = fs.readFileSync(stylePath, "base64");
+      const base64Color = fs.readFileSync(colorPath, "base64");
 
       res.render("result", {
         base64User,
@@ -59,8 +64,8 @@ app.post(
         base64Image,
       });
     } catch (err) {
-      console.error(err);
-      res.status(500).send("오류 발생");
+      console.error("❌ 처리 실패:", err);
+      res.status(500).send("서버 오류");
     }
   }
 );
