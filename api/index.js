@@ -30,6 +30,8 @@ app.post(
   ]),
   async (req, res) => {
     try {
+
+       console.log("파일들:", req.files); // ✅ 로그 찍기
       const userPath = req.files["user"]?.[0]?.path;
       const stylePath = req.files["style"]?.[0]?.path;
       const colorPath = req.files["color"]?.[0]?.path;
